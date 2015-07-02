@@ -1,4 +1,4 @@
-package com.processor.codegenerator;
+package com.processor.codegenerator.aggregate;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -10,8 +10,6 @@ import java.util.Random;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-
-
 
 import org.axonframework.commandhandling.annotation.CommandHandler;
 import org.axonframework.commandhandling.annotation.TargetAggregateIdentifier;
@@ -56,39 +54,6 @@ public class AggregateBuilderHelper {
 				.addModifiers(Modifier.PRIVATE).build();
 		return fieldID;
 
-	}
-
-	protected MethodSpec constructor() {
-		ClassName createCommand = ClassName.get(
-				axonAnnotatedClass.getPackageName() + ".command", "Create"
-						+ className + "Command");
-
-		Builder methodBuilder = MethodSpec.constructorBuilder()
-				.addModifiers(Modifier.PUBLIC)
-				.addParameter(createCommand, "command");
-
-		methodBuilder.addStatement("this.id = id");
-		methodBuilder.addStatement("this.$N = $N", className, className);
-
-		MethodSpec method = methodBuilder.build();
-		return method;
-
-	}
-/*
-	private MethodSpec getter(String name) {
-		String methodName = "get" + name.substring(0, 1).toUpperCase()
-				+ name.substring(1);
-		return MethodSpec.methodBuilder(methodName).returns(String.class)
-				.addStatement("return $S", name).build();
-	}*/
-
-	private MethodSpec setter(String name) {
-		// make the first letter in the field name captilized
-		String methodName = "set" + name.substring(0, 1).toUpperCase()
-				+ name.substring(1);
-		return MethodSpec.methodBuilder(methodName)
-				.addParameter(String.class, name)
-				.addStatement("this.$N = $N", name, name).build();
 	}
 
 	protected MethodSpec commandHandler(AxonAnnotatedMethod axonAnnotatedMethod) {
@@ -171,10 +136,44 @@ public class AggregateBuilderHelper {
 				.addParameter(event, "event")
 				.addModifiers(Modifier.FINAL)
 				.addAnnotation(EventHandler.class)
+				.addStatement("this.id = event.id")
 				.addStatement(
 						className + "= new " + className + "(" + eventParam
 								+ ")");
 		return eventHandler.build();
+	}
+
+	protected MethodSpec commandHandlerForConstructor(
+			AxonAnnotatedMethod axonAnnotatedMethod) {
+		ClassName createCommand = ClassName.get(
+				axonAnnotatedClass.getPackageName() + ".command", "Create"
+						+ className + "Command");
+		String eventName = className
+				+ "CreatedEvent";
+		ClassName event = ClassName.get(axonAnnotatedClass.getPackageName()
+				+ ".event", eventName);
+
+		Map<String, TypeMirror> methodParam = axonAnnotatedMethod
+				.getMethodParam();
+
+		String constructorParam = "command.id, ";
+
+		for (Map.Entry<String, TypeMirror> entry : methodParam.entrySet()) {
+			constructorParam += "command." + entry.getKey() + ",";
+
+		}
+		constructorParam = constructorParam.substring(0, constructorParam.length() - 1);
+
+		Builder methodBuilder = MethodSpec.constructorBuilder()
+				.addModifiers(Modifier.PUBLIC)
+				.addStatement("apply (new $T(" + constructorParam + "))", event)
+				.addParameter(createCommand, "command");
+
+		methodBuilder.addAnnotation(CommandHandler.class);
+
+		MethodSpec method = methodBuilder.build();
+		return method;
+
 	}
 
 	protected MethodSpec accessMethod(AxonAnnotatedMethod annotatedMethod) {
@@ -187,73 +186,16 @@ public class AggregateBuilderHelper {
 				.build();
 		return eventHandler;
 	}
+	
+	protected MethodSpec emptyConstructor() {
 
-	public MethodSpec testBeforeSetup() {
-
-		MethodSpec.Builder testCommandEvent = MethodSpec
-				.methodBuilder("setUp")
-				.addException(Exception.class)
+		MethodSpec emptyConstructor = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC)
-				.addAnnotation(Before.class)
-				.addStatement(
-						" fixture = $T.newGivenWhenThenFixture($T.class)",
-						Fixtures.class,axonAnnotatedClass.getClassType());
-		return testCommandEvent.build();
-
+				.addStatement("super()")
+				.build();
+		return emptyConstructor;
 	}
 
-	public String randomParam(TypeMirror type) {
-		if (type.toString().equals("java.lang.String")) {
-
-			SecureRandom random = new SecureRandom();
-			return new BigInteger(130, random).toString(32);
-		} else if (type.toString().equals("java.lang.Integer")){
-			Random rand = new Random();
-
-		    // nextInt is normally exclusive of the top value,
-		    // so add 1 to make it inclusive
-		    Integer randomNum = rand.nextInt((100- 0) + 1)  ;
-
-		    return randomNum.toString();
-
-		}
-		return null;
-	}
-
-	public MethodSpec testCommandEvent(AxonAnnotatedMethod annotatedMethod) {
-		Map<String, TypeMirror> methodParam = annotatedMethod.getMethodParam();
-		String eventName = annotatedMethod.getCapitalMethodName()
-				+ "CompletedEvent";
-
-		ClassName event = ClassName.get(axonAnnotatedClass.getPackageName()
-				+ ".event", eventName);
-
-		String commandName = annotatedMethod.getCapitalMethodName() + "Command";
-
-		ClassName command = ClassName.get(axonAnnotatedClass.getPackageName()
-				+ ".command", commandName);
-		
-		Random rand = new Random();
-	    Integer randomNum = rand.nextInt((100- 0) + 1);
-		String testParam = "\""+randomNum.toString()+"\""+",";
-
-		for (Map.Entry<String, TypeMirror> entry : methodParam.entrySet()) {
-			testParam += "\""+randomParam(entry.getValue())+"\"" + ",";
-
-		}
-		testParam = testParam.substring(0, testParam.length() - 1);
-
-		MethodSpec.Builder testCommandEvent = MethodSpec
-				.methodBuilder("test" + annotatedMethod.getCapitalMethodName())
-				.addException(Exception.class)
-				.addParameter(event, "event")
-				.addModifiers(Modifier.FINAL)
-				.addAnnotation(Test.class)
-				.addStatement(
-						"fixture.given().when(new $T(" + testParam
-								+ ")).expectEvents(new $T($L))", command,event, testParam);
-		return testCommandEvent.build();
-
-	}
+	
 
 }

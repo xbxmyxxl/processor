@@ -1,4 +1,4 @@
-package com.processor.codegenerator;
+package com.processor.codegenerator.eventcommand;
 
 import java.util.Map;
 
@@ -9,15 +9,13 @@ import com.processor.parse.AxonAnnotatedMethod;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeSpec.Builder;
 
-public class ConstructorEventBuilder {
+public class EventBuilder {
 	
 	private AxonAnnotatedMethod axonAnnotatedMethod;
-	String className;
 
-	public ConstructorEventBuilder(String className,AxonAnnotatedMethod axonAnnotatedMethod) {
+	public EventBuilder(AxonAnnotatedMethod axonAnnotatedMethod) {
 		super();
 		this.axonAnnotatedMethod = axonAnnotatedMethod;
-		this.className = className;
 	}
 
 	public TypeSpec getEventClass() {
@@ -26,11 +24,11 @@ public class ConstructorEventBuilder {
 				.getMethodParam();
 		
 		//set up the helper
-		EventCommandBuilderHelper eventBuilderHelper = new EventCommandBuilderHelper(
+		ConstructorBuilderHelper eventBuilderHelper = new ConstructorBuilderHelper(
 				axonAnnotatedMethod);
-
-		String commandName = className
-				+ "CreatedEvent";
+		String className = axonAnnotatedMethod.getMethodName();
+		String commandName = Character.toUpperCase(className.charAt(0)) + className.substring(1)
+				+ "CompletedEvent";
 		Builder classBuilder = TypeSpec.classBuilder(commandName)
 				.addModifiers(Modifier.PUBLIC, Modifier.FINAL)
 				.addField(eventBuilderHelper.fieldID("event"));
@@ -44,6 +42,8 @@ public class ConstructorEventBuilder {
 		
 		//adding constructor
 		classBuilder.addMethod(eventBuilderHelper.constructor());
+
+		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n");
 
 		TypeSpec event = classBuilder.build();
 

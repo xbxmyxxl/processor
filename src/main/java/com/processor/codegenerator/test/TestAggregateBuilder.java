@@ -1,4 +1,4 @@
-package com.processor.codegenerator;
+package com.processor.codegenerator.test;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class TestAggregateBuilder {
 		// getting the map
 
 		// set up the helper
-		AggregateBuilderHelper aggregateBuilderHelper = new AggregateBuilderHelper(
+		TestAggregateBuilderHelper testAggregateBuilderHelper = new TestAggregateBuilderHelper(
 				axonAnnotatedClass);
 		String className = axonAnnotatedClass.getClassName();
 		String testAggregateName = className + "RootAggregate" + "Test";
@@ -45,13 +45,18 @@ public class TestAggregateBuilder {
 
 		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
 				.getClassModifierMethods()) {
-			testBuilder.addMethod(aggregateBuilderHelper
+			testBuilder.addMethod(testAggregateBuilderHelper
 					.testCommandEvent(annotatedMethod));
+		}
+		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
+				.getClassConstructorMethods()) {
+			testBuilder.addMethod(testAggregateBuilderHelper
+					.testConstructor(annotatedMethod));
 		}
 		
 
 		// adding constructor
-		testBuilder.addMethod(aggregateBuilderHelper.testBeforeSetup());
+		testBuilder.addMethod(testAggregateBuilderHelper.testBeforeSetup());
 		testBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc(
 				"\n");
 

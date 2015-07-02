@@ -18,6 +18,12 @@ package com.processor.codegenerator;
 
 import com.processor.AxonProcessingException;
 import com.processor.annotations.StateAccessor;
+import com.processor.codegenerator.aggregate.AggregateBuilder;
+import com.processor.codegenerator.constructor.ConstructorCommandBuilder;
+import com.processor.codegenerator.constructor.ConstructorEventBuilder;
+import com.processor.codegenerator.eventcommand.CommandBuilder;
+import com.processor.codegenerator.eventcommand.EventBuilder;
+import com.processor.codegenerator.test.TestAggregateBuilder;
 import com.processor.parse.AxonAnnotatedClass;
 import com.processor.parse.AxonAnnotatedMethod;
 import com.squareup.javapoet.JavaFile;

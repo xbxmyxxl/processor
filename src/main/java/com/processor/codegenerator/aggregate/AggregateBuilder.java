@@ -1,6 +1,5 @@
-package com.processor.codegenerator;
+package com.processor.codegenerator.aggregate;
 
-import java.util.Map;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
@@ -42,20 +41,22 @@ public class AggregateBuilder {
 			classBuilder.addMethod(aggregateBuilderHelper.commandHandler(annotatedMethod));
 			classBuilder.addMethod(aggregateBuilderHelper.eventHandler(annotatedMethod));
 		}
-		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
-				.getClassAccessorMethods()) {
-			classBuilder.addMethod(aggregateBuilderHelper.accessMethod(annotatedMethod));
-		}
 		
 		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
 				.getClassConstructorMethods()) {
 			classBuilder.addMethod(aggregateBuilderHelper.eventHandlerForConstructor(annotatedMethod));
+			classBuilder.addMethod(aggregateBuilderHelper.commandHandlerForConstructor(annotatedMethod));
+		}
+		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
+				.getClassAccessorMethods()) {
+			classBuilder.addMethod(aggregateBuilderHelper
+					.accessMethod(annotatedMethod));
 		}
 
 		// adding constructor
-		classBuilder.addMethod(aggregateBuilderHelper.constructor());
 		classBuilder.superclass(AbstractAnnotatedAggregateRoot.class);
 		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n");
+		classBuilder.addMethod(aggregateBuilderHelper.emptyConstructor());
 
 		TypeSpec command = classBuilder.build();
 

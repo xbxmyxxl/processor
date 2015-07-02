@@ -1,4 +1,4 @@
-package com.processor.codegenerator;
+package com.processor.codegenerator.eventcommand;
 
 import java.util.Map;
 
@@ -24,7 +24,7 @@ public class CommandBuilder {
 				.getMethodParam();
 		
 		//set up the helper
-		EventCommandBuilderHelper commandBuilderHelper = new EventCommandBuilderHelper(
+		ConstructorBuilderHelper commandBuilderHelper = new ConstructorBuilderHelper(
 				axonAnnotatedMethod);
 		String className = axonAnnotatedMethod.getMethodName();
 		String commandName = Character.toUpperCase(className.charAt(0)) + className.substring(1)+ "Command";
@@ -42,6 +42,8 @@ public class CommandBuilder {
 		
 		//adding constructor
 		classBuilder.addMethod(commandBuilderHelper.constructor());
+
+		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n");
 
 		TypeSpec command = classBuilder.build();
 

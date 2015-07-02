@@ -1,4 +1,4 @@
-package com.processor.codegenerator;
+package com.processor.codegenerator.constructor;
 
 import java.util.Map;
 
@@ -27,7 +27,7 @@ public class ConstructorCommandBuilder {
 				.getMethodParam();
 
 		// set up the helper
-		EventCommandBuilderHelper commandBuilderHelper = new EventCommandBuilderHelper(
+		ConstructorBuilderHelper commandBuilderHelper = new ConstructorBuilderHelper(
 				axonAnnotatedMethod);
 
 		String commandName = "Create" + className + "Command";
