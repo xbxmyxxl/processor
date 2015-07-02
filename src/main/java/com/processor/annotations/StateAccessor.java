@@ -14,27 +14,25 @@
  * limitations under the License.
  */
 
-package com.hannesdorfmann.annotationprocessing101.factory.processor;
+package com.processor.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Annotation to indicate classes that are part of a certain factory
- *
- * @author Hannes Dorfmann
- */
-@Target(ElementType.TYPE) @Retention(RetentionPolicy.CLASS) public @interface Factory {
-
-  /**
-   * The name of the factory
-   */
-  Class type();
-
-  /**
-   * The identifier for determining which item should be instantiated
-   */
-  String id();
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+ 
+//@Documented
+//@Target(ElementType.METHOD)
+//@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+public @interface StateAccessor{
+    boolean generate() default true;
 }
+

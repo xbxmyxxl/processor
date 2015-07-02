@@ -1,15 +1,15 @@
-package com.hannesdorfmann.annotationprocessing101.factory.processor;
+package com.processor;
 
 import javax.lang.model.element.Element;
 
 /**
  * @author Hannes Dorfmann
  */
-public class ProcessingException extends Exception {
+public class AxonProcessingException extends Exception {
 
   Element element;
 
-  public ProcessingException(Element element, String msg, Object... args) {
+  public AxonProcessingException(Element element, String msg, Object... args) {
     super(String.format(msg, args));
     this.element = element;
   }
