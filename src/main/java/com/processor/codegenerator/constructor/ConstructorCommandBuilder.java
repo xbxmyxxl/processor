@@ -44,6 +44,7 @@ public class ConstructorCommandBuilder {
 
 		// adding constructor
 		classBuilder.addMethod(commandBuilderHelper.constructor());
+		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n");
 
 		TypeSpec command = classBuilder.build();
 

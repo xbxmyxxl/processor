@@ -44,6 +44,7 @@ public class ConstructorEventBuilder {
 		
 		//adding constructor
 		classBuilder.addMethod(eventBuilderHelper.constructor());
+		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n");
 
 		TypeSpec event = classBuilder.build();
 

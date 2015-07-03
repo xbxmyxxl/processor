@@ -62,10 +62,7 @@ public class AxonProcessor extends AbstractProcessor {
 	private Elements elementUtils;
 	private Filer filer;
 	private Messager messager;
-	private Map<String, AxonGroupedClasses> factoryClasses = new LinkedHashMap<String, AxonGroupedClasses>();
 
-	// private List<AxonAnnotatedMethod> methodMap= new
-	// LinkedList<AxonAnnotatedMethod>();
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
@@ -73,8 +70,6 @@ public class AxonProcessor extends AbstractProcessor {
 		elementUtils = processingEnv.getElementUtils();
 		filer = processingEnv.getFiler();
 		messager = processingEnv.getMessager();
-		messager.printMessage(Diagnostic.Kind.NOTE,
-				"newer Version:get the messager");
 	}
 
 	@Override
@@ -92,7 +87,6 @@ public class AxonProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations,
 			RoundEnvironment roundEnv) {
-		messager.printMessage(Diagnostic.Kind.NOTE, "In the processing");
 		AxonGroupedClasses axonGroupedClass = new AxonGroupedClasses(filer);
 		try {
 			// Scan classes
@@ -124,7 +118,8 @@ public class AxonProcessor extends AbstractProcessor {
 				// Check if a method has been annotated with @StateAccessor
 				if (annotatedElement.getKind() == ElementKind.METHOD) {
 					axonGroupedClass.updateAnnotatedClassMap(
-							(ExecutableElement) annotatedElement, "Accessor",elementUtils);
+							(ExecutableElement) annotatedElement, "Accessor",
+							elementUtils);
 
 				} else if (annotatedElement.getKind() == ElementKind.CONSTRUCTOR) {
 					throw new AxonProcessingException(

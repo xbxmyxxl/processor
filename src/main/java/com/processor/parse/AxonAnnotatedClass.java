@@ -23,15 +23,15 @@ public class AxonAnnotatedClass {
 	
 	private String qualifiedGroupClassName;
 	private String simpleFactoryGroupName;
-	
+	private String packageName;
 	private String className;
 	private TypeMirror classType;
+	
 	private List<AxonAnnotatedMethod> classModifierMethods = new ArrayList<AxonAnnotatedMethod>();
-	private List<AxonAnnotatedMethod> classAccessorMethods = new ArrayList<AxonAnnotatedMethod>();;
-	//should all be modifier
+	private List<AxonAnnotatedMethod> classAccessorMethods = new ArrayList<AxonAnnotatedMethod>();
 	private List<AxonAnnotatedMethod> classConstructorMethods = new ArrayList<AxonAnnotatedMethod>();
 
-	private String packageName;
+	
 
 	public AxonAnnotatedClass(TypeElement classElement, Elements elementUtils)
 			throws AxonProcessingException {
