@@ -122,12 +122,13 @@ public class InterfaceCommandHandlerBuilder {
 		//		.loadClass(interfaceCommandValidatorName);
 		// System.out.println("aClass.getName() = " + aClass.getName());
 
+		String interfaceName = axonAnnotatedClass.getPackageName()+"."+axonAnnotatedClass.getClassName()+"CommandValidator";
 		TypeSpec.Builder validatorInterfaceBuilder = TypeSpec
 				.classBuilder(
 						axonAnnotatedClass.getClassName() + "CommandValidator"
 								+ "Default").addModifiers(Modifier.PUBLIC)
-				.addMethod(emptyConstructor());
-			//	.addSuperinterface(interfaceCommandValidator);
+				.addMethod(emptyConstructor())
+			 	.addSuperinterface(ClassName.bestGuess(interfaceName));
 		// modifier
 		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
 				.getClassModifierMethods()) {

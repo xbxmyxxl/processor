@@ -66,7 +66,7 @@ public class AggregateBuilder {
 				"AbstractAnnotatedAggregateRoot");
 		ParameterizedTypeName parameterizedRoot = ParameterizedTypeName.get(
 				aggregateRoot, TypeName.get(classType));
-		
+
 		// adding constructor
 		classBuilder.superclass(parameterizedRoot);
 		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc(
@@ -77,15 +77,18 @@ public class AggregateBuilder {
 
 		return command;
 	}
-	
-	//need to change if axon framework changes
-	public ParameterizedTypeName getParameterizedSuperClass()
-	{
+
+	// need to change if axon framework changes
+	public ParameterizedTypeName getParameterizedSuperClass() {
 		ClassName aggregateRoot = ClassName.get(
 				"org.axonframework.eventsourcing.annotation",
 				"AbstractAnnotatedAggregateRoot");
+		ClassName aggregateRootName = ClassName.bestGuess(axonAnnotatedClass
+				.getPackageName()+".aggregate."
+				+ axonAnnotatedClass.getClassName()
+				+ "RootAggregate");
 		ParameterizedTypeName parameterizedRoot = ParameterizedTypeName.get(
-				aggregateRoot, TypeName.get(axonAnnotatedClass.getClassType()));
+				aggregateRoot, aggregateRootName);
 		return parameterizedRoot;
 	}
 }

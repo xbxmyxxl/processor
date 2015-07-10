@@ -1,4 +1,4 @@
-package com.processor.codegenerator.eventcommand;
+package com.processor.codegenerator.eventcommand.nonconstructor;
 
 import java.util.Map;
 

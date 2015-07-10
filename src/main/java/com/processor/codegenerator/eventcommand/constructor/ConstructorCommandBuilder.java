@@ -1,4 +1,4 @@
-package com.processor.codegenerator.eventcommand;
+package com.processor.codegenerator.eventcommand.constructor;
 
 import java.util.Map;
 
@@ -9,44 +9,45 @@ import com.processor.parse.AxonAnnotatedMethod;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeSpec.Builder;
 
-public class EventBuilder {
-	
-	private AxonAnnotatedMethod axonAnnotatedMethod;
+public class ConstructorCommandBuilder {
 
-	public EventBuilder(AxonAnnotatedMethod axonAnnotatedMethod) {
+	private AxonAnnotatedMethod axonAnnotatedMethod;
+	String className;
+
+	public ConstructorCommandBuilder(String className,
+			AxonAnnotatedMethod axonAnnotatedMethod) {
 		super();
 		this.axonAnnotatedMethod = axonAnnotatedMethod;
+		this.className = className;
 	}
 
-	public TypeSpec getEventClass() {
-		//getting the map
+	public TypeSpec getCommandClass() {
+		// getting the map
 		Map<String, TypeMirror> methodParam = axonAnnotatedMethod
 				.getMethodParam();
-		
-		//set up the helper
-		CommandEventBuilderHelper eventBuilderHelper = new CommandEventBuilderHelper(
+
+		// set up the helper
+		ConstructorBuilderHelper commandBuilderHelper = new ConstructorBuilderHelper(
 				axonAnnotatedMethod);
-		String className = axonAnnotatedMethod.getMethodName();
-		String commandName = Character.toUpperCase(className.charAt(0)) + className.substring(1)
-				+ "CompletedEvent";
+
+		String commandName = "Create" + className + "Command";
 		Builder classBuilder = TypeSpec.classBuilder(commandName)
 				.addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-				.addField(eventBuilderHelper.fieldID("event"));
+				.addField(commandBuilderHelper.fieldID("command"));
 
-		//adding fields
+		// adding fields
 		for (Map.Entry<String, TypeMirror> entry : methodParam.entrySet()) {
-			classBuilder.addField(eventBuilderHelper.field(entry.getValue(),
+			classBuilder.addField(commandBuilderHelper.field(entry.getValue(),
 					entry.getKey()));
 
 		}
-		
-		//adding constructor
-		classBuilder.addMethod(eventBuilderHelper.constructor());
 
+		// adding constructor
+		classBuilder.addMethod(commandBuilderHelper.constructor());
 		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n");
 
-		TypeSpec event = classBuilder.build();
+		TypeSpec command = classBuilder.build();
 
-		return event;
+		return command;
 	}
 }

@@ -10,7 +10,9 @@ import org.axonframework.test.FixtureConfiguration;
 
 import com.processor.parse.AxonAnnotatedClass;
 import com.processor.parse.AxonAnnotatedMethod;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeSpec.Builder;
@@ -30,15 +32,14 @@ public class TestAggregateBuilder {
 		// set up the helper
 		TestAggregateBuilderHelper testAggregateBuilderHelper = new TestAggregateBuilderHelper(
 				axonAnnotatedClass);
-		String className = axonAnnotatedClass.getClassName();
-		String testAggregateName = className + "RootAggregate" + "Test";
+		
 
 		FieldSpec fixture = FieldSpec
-				.builder(FixtureConfiguration.class, "fixture")
+				.builder(getParameterizedTestClass(), "fixture")
 				.addModifiers(Modifier.PRIVATE).build();
+		String testAggregateName = axonAnnotatedClass.getClassName()+"RootAggregateTest";
 		// add the fields
-		TypeSpec.Builder testBuilder = TypeSpec
-				.classBuilder(testAggregateName)
+		TypeSpec.Builder testBuilder = TypeSpec.classBuilder(testAggregateName )
 				.addModifiers(Modifier.PUBLIC, Modifier.FINAL)
 				.addField(fixture);
 
@@ -52,7 +53,6 @@ public class TestAggregateBuilder {
 			testBuilder.addMethod(testAggregateBuilderHelper
 					.testConstructor(annotatedMethod));
 		}
-		
 
 		// adding constructor
 		testBuilder.addMethod(testAggregateBuilderHelper.testBeforeSetup());
@@ -62,5 +62,17 @@ public class TestAggregateBuilder {
 		TypeSpec command = testBuilder.build();
 
 		return command;
+	}
+
+	public ParameterizedTypeName getParameterizedTestClass() {
+
+		ClassName aggregateName = ClassName.get(
+				axonAnnotatedClass.getPackageName() + ".aggregate",
+				axonAnnotatedClass.getClassName() + "RootAggregate");
+
+		ParameterizedTypeName parameterizedFixture = ParameterizedTypeName
+				.get(ClassName.get("org.axonframework.test",
+						"FixtureConfiguration"), aggregateName);
+		return parameterizedFixture;
 	}
 }

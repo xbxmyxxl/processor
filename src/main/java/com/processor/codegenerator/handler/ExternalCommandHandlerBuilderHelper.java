@@ -57,11 +57,16 @@ public class ExternalCommandHandlerBuilderHelper {
 
 		ClassName repository = ClassName.get("org.axonframework.repository",
 				"Repository");
+		ClassName aggregateRoot = ClassName.bestGuess(axonAnnotatedClass
+				.getPackageName()
+				+ ".aggregate."
+				+ axonAnnotatedClass.getClassName()
+				+ "RootAggregate");
 		ParameterizedTypeName parameterizedRepository = ParameterizedTypeName
 				.get(repository,
-						TypeName.get(axonAnnotatedClass.getClassType()));
+						aggregateRoot);
 
-		FieldSpec field = FieldSpec.builder(Repository.class, "repository")
+		FieldSpec field = FieldSpec.builder(parameterizedRepository, "repository")
 				.addModifiers(Modifier.PRIVATE, Modifier.FINAL).build();
 		return field;
 
@@ -83,11 +88,21 @@ public class ExternalCommandHandlerBuilderHelper {
 	}
 
 	public MethodSpec constructor() {
+		ClassName repository = ClassName.get("org.axonframework.repository",
+				"Repository");
+		ClassName aggregateRoot = ClassName.bestGuess(axonAnnotatedClass
+				.getPackageName()
+				+ ".aggregate."
+				+ axonAnnotatedClass.getClassName()
+				+ "RootAggregate");
+		ParameterizedTypeName parameterizedRepository = ParameterizedTypeName
+				.get(repository,
+						aggregateRoot);
 
 		Builder constructorBuilder = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC);
 
-		constructorBuilder.addParameter(Repository.class, "repository",
+		constructorBuilder.addParameter(parameterizedRepository, "repository",
 				Modifier.FINAL);
 		constructorBuilder.addStatement("this.repository = repository");
 
@@ -110,10 +125,20 @@ public class ExternalCommandHandlerBuilderHelper {
 
 	public MethodSpec defaultConstructor() {
 
+		ClassName repository = ClassName.get("org.axonframework.repository",
+				"Repository");
+		ClassName aggregateRoot = ClassName.bestGuess(axonAnnotatedClass
+				.getPackageName()
+				+ ".aggregate."
+				+ axonAnnotatedClass.getClassName()
+				+ "RootAggregate");
+		ParameterizedTypeName parameterizedRepository = ParameterizedTypeName
+				.get(repository,
+						aggregateRoot);
 		Builder constructorBuilder = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC);
 
-		constructorBuilder.addParameter(Repository.class, "repository",
+		constructorBuilder.addParameter(parameterizedRepository, "repository",
 				Modifier.FINAL);
 		constructorBuilder.addStatement("this.repository = repository");
 
@@ -170,8 +195,8 @@ public class ExternalCommandHandlerBuilderHelper {
 				.addAnnotation(CommandHandler.class)
 				.addParameter(command, "command").addModifiers(Modifier.FINAL);
 
-		commandHandler.addStatement("$T $L = ($T)repository.load(command.id)",
-				aggregate, variableAggregateName, aggregate);
+		commandHandler.addStatement("$L $L = ($L)repository.load(command.id)",
+				aggregate.simpleName(), variableAggregateName, aggregate.simpleName());
 
 		String validatorName = axonAnnotatedMethod.getCapitalMethodName()
 				+ "CommandValidator";
@@ -194,7 +219,7 @@ public class ExternalCommandHandlerBuilderHelper {
 			AxonAnnotatedMethod axonAnnotatedMethod) {
 
 		ClassName command;
-		String commandName = "Create"+ axonAnnotatedClass.getClassName()
+		String commandName = "Create" + axonAnnotatedClass.getClassName()
 				+ "Command";
 		command = ClassName.get(axonAnnotatedClass.getPackageName()
 				+ ".command", commandName);
@@ -221,8 +246,8 @@ public class ExternalCommandHandlerBuilderHelper {
 				.addAnnotation(CommandHandler.class)
 				.addParameter(command, "command").addModifiers(Modifier.FINAL);
 
-		String validatorName = "Create"
-				+ axonAnnotatedClass.getClassName() + "CommandValidator";
+		String validatorName = "Create" + axonAnnotatedClass.getClassName()
+				+ "CommandValidator";
 		ClassName validator = ClassName.get(
 				axonAnnotatedClass.getPackageName(), validatorName);
 
@@ -232,10 +257,10 @@ public class ExternalCommandHandlerBuilderHelper {
 		commandHandler
 				.beginControlFlow("if($L.$T(command))", validatorClassName,
 						validator)
-				.addStatement("$T $L = new $T(command)", aggregate,
-						variableAggregateName, aggregate)
-				.addStatement("repository.add($L)",
-						variableAggregateName).endControlFlow();
+				.addStatement("$L $L = new $L(command)", aggregateName,
+						variableAggregateName, aggregateName)
+				.addStatement("repository.add($L)", variableAggregateName)
+				.endControlFlow();
 
 		return commandHandler.build();
 
