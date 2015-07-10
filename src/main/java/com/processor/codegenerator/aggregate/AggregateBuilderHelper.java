@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -57,30 +58,62 @@ public class AggregateBuilderHelper {
 	}
 
 	protected MethodSpec commandHandler(AxonAnnotatedMethod axonAnnotatedMethod) {
-		Map<String, TypeMirror> methodParam = axonAnnotatedMethod
-				.getMethodParam();
 
-		String commandName = axonAnnotatedMethod.getCapitalMethodName()
-				+ "Command";
-		String eventName = axonAnnotatedMethod.getCapitalMethodName()
-				+ "CompletedEvent";
-		ClassName event = ClassName.get(axonAnnotatedClass.getPackageName()
-				+ ".event", eventName);
-		ClassName command = ClassName.get(axonAnnotatedClass.getPackageName()
-				+ ".command", commandName);
+		MethodSpec.Builder commandHandler = MethodSpec.methodBuilder("handle")
+				.addAnnotation(CommandHandler.class);
 
-		String eventParam = "command.id, ";
+		String eventParam;
+		ClassName event;
+		ClassName command;
+		{
+			Map<String, TypeMirror> methodParam = axonAnnotatedMethod
+					.getMethodParam();
 
-		for (Map.Entry<String, TypeMirror> entry : methodParam.entrySet()) {
-			eventParam += "command." + entry.getKey() + ",";
+			String commandName = axonAnnotatedMethod.getCapitalMethodName()
+					+ "Command";
+			String eventName = axonAnnotatedMethod.getCapitalMethodName()
+					+ "CompletedEvent";
+			event = ClassName.get(axonAnnotatedClass.getPackageName()
+					+ ".event", eventName);
+			command = ClassName.get(axonAnnotatedClass.getPackageName()
+					+ ".command", commandName);
+
+			eventParam = "command.id, ";
+
+			for (Map.Entry<String, TypeMirror> entry : methodParam.entrySet()) {
+				eventParam += "command." + entry.getKey() + ",";
+
+			}
+
+			eventParam = eventParam.substring(0, eventParam.length() - 1);
+		}
+		commandHandler.addStatement("boolean flag = true")
+				.addParameter(command, "command").addModifiers(Modifier.FINAL,Modifier.PUBLIC);
+
+		for (ExecutableElement element : axonAnnotatedMethod
+				.getCommandValidator()) {
+
+			String validatorName = element.getSimpleName().toString();
+			ClassName validator = ClassName.get(
+					axonAnnotatedClass.getPackageName(), className);
+			String validatorParam = "";
+			Map<String, TypeMirror> methodValidatorParam = axonAnnotatedMethod
+					.getMethodParam();
+			for (Map.Entry<String, TypeMirror> entry : methodValidatorParam
+					.entrySet()) {
+				validatorParam += "command." + entry.getKey() + ",";
+
+			}
+			validatorParam = validatorParam.substring(0,
+					validatorParam.length() - 1);
+
+			commandHandler.addStatement("flag = flag && $L.$L($L)",className, validatorName,
+					validatorParam);
 
 		}
-
-		eventParam = eventParam.substring(0, eventParam.length() - 1);
-		MethodSpec.Builder commandHandler = MethodSpec.methodBuilder("handle")
-				.addAnnotation(CommandHandler.class)
-				.addParameter(command, "command").addModifiers(Modifier.FINAL)
-				.addStatement("apply (new $T(" + eventParam + "))", event);
+		commandHandler.beginControlFlow("if(flag)")
+				.addStatement("apply (new $T(" + eventParam + "))", event)
+				.endControlFlow();
 
 		return commandHandler.build();
 	}
@@ -105,7 +138,7 @@ public class AggregateBuilderHelper {
 		MethodSpec.Builder eventHandler = MethodSpec
 				.methodBuilder("on")
 				.addParameter(event, "event")
-				.addModifiers(Modifier.FINAL)
+				.addModifiers(Modifier.FINAL,Modifier.PUBLIC)
 				.addAnnotation(EventHandler.class)
 				.addStatement("this.id = event.id")
 				.addStatement(
@@ -134,7 +167,7 @@ public class AggregateBuilderHelper {
 		MethodSpec.Builder eventHandler = MethodSpec
 				.methodBuilder("on")
 				.addParameter(event, "event")
-				.addModifiers(Modifier.FINAL)
+				.addModifiers(Modifier.FINAL,Modifier.PUBLIC)
 				.addAnnotation(EventHandler.class)
 				.addStatement("this.id = event.id")
 				.addStatement(
@@ -148,8 +181,8 @@ public class AggregateBuilderHelper {
 		ClassName createCommand = ClassName.get(
 				axonAnnotatedClass.getPackageName() + ".command", "Create"
 						+ className + "Command");
-		String eventName = className
-				+ "CreatedEvent";
+
+		String eventName = className + "CreatedEvent";
 		ClassName event = ClassName.get(axonAnnotatedClass.getPackageName()
 				+ ".event", eventName);
 
@@ -162,9 +195,11 @@ public class AggregateBuilderHelper {
 			constructorParam += "command." + entry.getKey() + ",";
 
 		}
-		constructorParam = constructorParam.substring(0, constructorParam.length() - 1);
+		constructorParam = constructorParam.substring(0,
+				constructorParam.length() - 1);
 
-		Builder methodBuilder = MethodSpec.constructorBuilder()
+		Builder methodBuilder = MethodSpec
+				.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC)
 				.addStatement("apply (new $T(" + constructorParam + "))", event)
 				.addParameter(createCommand, "command");
@@ -186,16 +221,12 @@ public class AggregateBuilderHelper {
 				.build();
 		return eventHandler;
 	}
-	
+
 	protected MethodSpec emptyConstructor() {
 
 		MethodSpec emptyConstructor = MethodSpec.constructorBuilder()
-				.addModifiers(Modifier.PUBLIC)
-				.addStatement("super()")
-				.build();
+				.addModifiers(Modifier.PUBLIC).addStatement("super()").build();
 		return emptyConstructor;
 	}
-
-	
 
 }

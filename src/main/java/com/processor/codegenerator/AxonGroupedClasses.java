@@ -23,6 +23,9 @@ import com.processor.codegenerator.constructor.ConstructorCommandBuilder;
 import com.processor.codegenerator.constructor.ConstructorEventBuilder;
 import com.processor.codegenerator.eventcommand.CommandBuilder;
 import com.processor.codegenerator.eventcommand.EventBuilder;
+import com.processor.codegenerator.facade.FacadeBuilder;
+import com.processor.codegenerator.handler.ExternalCommandHandlerBuilder;
+import com.processor.codegenerator.handler.InterfaceCommandHandlerBuilder;
 import com.processor.codegenerator.test.TestAggregateBuilder;
 import com.processor.parse.AxonAnnotatedClass;
 import com.processor.parse.AxonAnnotatedMethod;
@@ -57,6 +60,15 @@ public class AxonGroupedClasses {
 			throws Exception {
 		JavaFile.builder(packageName, typeSpec).build().writeTo(filer);
 
+	}
+
+	public void updateAnnotatedMethod(Elements elementUtils,
+			ExecutableElement commandValidator, String methodName) {
+		String className = commandValidator.getEnclosingElement()
+				.getSimpleName().toString();
+		AxonAnnotatedClass annotatedClass = classMap.get(className);
+		annotatedClass.updateMethodValidator(methodName, commandValidator);
+		classMap.put(className, annotatedClass);
 	}
 
 	public void updateAnnotatedClassMap(ExecutableElement annotatedElement,
@@ -117,30 +129,38 @@ public class AxonGroupedClasses {
 		for (Map.Entry<String, AxonAnnotatedClass> entry : classMap.entrySet()) {
 			AxonAnnotatedClass annotatedClass = entry.getValue();
 			String className = entry.getKey();
+
 			for (AxonAnnotatedMethod annotatedMethod : annotatedClass
 					.getClassModifierMethods()) {
+
 				String pkgName = annotatedMethod.getPackageName() + ".command";
 				CommandBuilder commandBuilder = new CommandBuilder(
 						annotatedMethod);
 				writeGeneratedCodeToFile(pkgName,
 						commandBuilder.getCommandClass());
+
 				pkgName = annotatedMethod.getPackageName() + ".event";
 				EventBuilder eventBuilder = new EventBuilder(annotatedMethod);
 				writeGeneratedCodeToFile(pkgName, eventBuilder.getEventClass());
+
 			}
 			for (AxonAnnotatedMethod annotatedMethod : annotatedClass
 					.getClassConstructorMethods()) {
+
 				String pkgName = annotatedMethod.getPackageName() + ".command";
 				ConstructorCommandBuilder constructorCommandBuilder = new ConstructorCommandBuilder(
 						className, annotatedMethod);
 				writeGeneratedCodeToFile(pkgName,
 						constructorCommandBuilder.getCommandClass());
+
 				pkgName = annotatedMethod.getPackageName() + ".event";
 				ConstructorEventBuilder constructorEventBuilder = new ConstructorEventBuilder(
 						className, annotatedMethod);
 				writeGeneratedCodeToFile(pkgName,
 						constructorEventBuilder.getEventClass());
+
 			}
+
 			String pkgName = annotatedClass.getPackageName() + ".aggregate";
 			AggregateBuilder aggregateBuilder = new AggregateBuilder(
 					annotatedClass);
@@ -152,6 +172,24 @@ public class AxonGroupedClasses {
 					annotatedClass);
 			writeGeneratedCodeToFile(pkgName,
 					testAggregateBuilder.getAggregateClass());
+
+			pkgName = annotatedClass.getPackageName();
+			FacadeBuilder facadeBuilder = new FacadeBuilder(annotatedClass);
+			writeGeneratedCodeToFile(pkgName, facadeBuilder.getFacadeClass());
+
+			pkgName = annotatedClass.getPackageName();
+			InterfaceCommandHandlerBuilder interfaceBuilder = new InterfaceCommandHandlerBuilder(
+					annotatedClass);
+			writeGeneratedCodeToFile(pkgName, interfaceBuilder.getInterface());
+
+			writeGeneratedCodeToFile(pkgName,
+					interfaceBuilder.getDefaultCommmandHandler());
+
+			pkgName = annotatedClass.getPackageName();
+			ExternalCommandHandlerBuilder externalCommandHandlerBuilder = new ExternalCommandHandlerBuilder(
+					annotatedClass);
+			writeGeneratedCodeToFile(pkgName,
+					externalCommandHandlerBuilder.getHandler());
 
 		}
 

@@ -17,6 +17,7 @@
 package com.processor;
 
 import com.google.auto.service.AutoService;
+import com.processor.annotations.CommandValidator;
 import com.processor.annotations.StateAccessor;
 import com.processor.annotations.StateModifier;
 import com.processor.codegenerator.AxonGroupedClasses;
@@ -50,6 +51,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
+
 /**
  * Annotation Processor for @Factory annotation
  *
@@ -76,6 +78,8 @@ public class AxonProcessor extends AbstractProcessor {
 	public Set<String> getSupportedAnnotationTypes() {
 		Set<String> annotataions = new LinkedHashSet<String>();
 		annotataions.add(StateAccessor.class.getCanonicalName());
+		annotataions.add(StateModifier.class.getCanonicalName());
+		annotataions.add(CommandValidator.class.getCanonicalName());
 		return annotataions;
 	}
 
@@ -98,7 +102,7 @@ public class AxonProcessor extends AbstractProcessor {
 					axonGroupedClass.updateAnnotatedClassMap(
 							(ExecutableElement) annotatedElement, "Modifier",
 							elementUtils);
-
+ 
 				} else if (annotatedElement.getKind() == ElementKind.CONSTRUCTOR) {
 					axonGroupedClass.updateAnnotatedClassMap(
 							(ExecutableElement) annotatedElement,
@@ -132,6 +136,21 @@ public class AxonProcessor extends AbstractProcessor {
 							"Only methods can be annotated with @%s",
 							StateAccessor.class.getSimpleName());
 				}
+			}
+			
+			for (Element annotatedElement : roundEnv
+					.getElementsAnnotatedWith(CommandValidator.class)) {
+				if (annotatedElement.getKind() == ElementKind.METHOD) {
+					CommandValidator annotation = annotatedElement.getAnnotation(CommandValidator.class);
+					String methodName = annotation.targetMethod();
+					axonGroupedClass.updateAnnotatedMethod( elementUtils,(ExecutableElement )annotatedElement,methodName);
+					
+				} else {
+					throw new AxonProcessingException(annotatedElement,
+							"Only methods can be annotated with @%s",
+							StateAccessor.class.getSimpleName());
+				}
+		
 			}
 
 			this.processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,

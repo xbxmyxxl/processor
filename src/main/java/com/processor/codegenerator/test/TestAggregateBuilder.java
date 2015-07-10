@@ -32,7 +32,6 @@ public class TestAggregateBuilder {
 				axonAnnotatedClass);
 		String className = axonAnnotatedClass.getClassName();
 		String testAggregateName = className + "RootAggregate" + "Test";
-		TypeMirror classType = axonAnnotatedClass.getClassType();
 
 		FieldSpec fixture = FieldSpec
 				.builder(FixtureConfiguration.class, "fixture")

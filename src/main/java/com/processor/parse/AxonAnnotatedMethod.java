@@ -16,6 +16,7 @@
 package com.processor.parse;
 
 //import com.hannesdorfmann.annotationprocessing101.factory.annotation.Factory;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,12 +45,14 @@ public class AxonAnnotatedMethod {
 
 	// should contain a method
 	private ExecutableElement exeElement;
+	private List<ExecutableElement> commandValidators =  new ArrayList<ExecutableElement>();
 	private String qualifiedGroupClassName;
 	private String simpleFactoryGroupName;
 	private String methodName;
 	private String packageName;
 	private String capitalMethodName;
 	private TypeMirror methodReturn;
+	
 	private Map<String, TypeMirror> methodParam = new HashMap<String, TypeMirror>();
 	
 //this is just for testing in git 
@@ -60,6 +63,7 @@ public class AxonAnnotatedMethod {
 		methodReturn = exeElement.getReturnType();
 		methodName = exeElement.getSimpleName().toString();
 		capitalMethodName = Character.toUpperCase(methodName.charAt(0)) + methodName.substring(1);
+		
 		PackageElement pkg = elementUtils.getPackageOf(exeElement.getEnclosingElement());
 		packageName = pkg.isUnnamed() ? null : pkg.getQualifiedName().toString();
 		
@@ -142,6 +146,14 @@ public class AxonAnnotatedMethod {
 
 	public void setPackageName(String packageName) {
 		this.packageName = packageName;
+	}
+
+	public List<ExecutableElement> getCommandValidator() {
+		return commandValidators;
+	}
+
+	public void setCommandValidator(ExecutableElement commandValidator) {
+		this.commandValidators.add( commandValidator);
 	}
 
 }

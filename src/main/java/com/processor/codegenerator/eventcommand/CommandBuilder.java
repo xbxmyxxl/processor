@@ -24,7 +24,7 @@ public class CommandBuilder {
 				.getMethodParam();
 
 		// set up the helper
-		ConstructorBuilderHelper commandBuilderHelper = new ConstructorBuilderHelper(
+		CommandEventBuilderHelper commandBuilderHelper = new CommandEventBuilderHelper(
 				axonAnnotatedMethod);
 		String className = axonAnnotatedMethod.getMethodName();
 		String commandName = Character.toUpperCase(className.charAt(0))

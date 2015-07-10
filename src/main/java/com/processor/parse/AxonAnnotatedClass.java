@@ -31,12 +31,15 @@ public class AxonAnnotatedClass {
 	private List<AxonAnnotatedMethod> classAccessorMethods = new ArrayList<AxonAnnotatedMethod>();
 	private List<AxonAnnotatedMethod> classConstructorMethods = new ArrayList<AxonAnnotatedMethod>();
 
+	private String lowerClassName;
+
 	
 
 	public AxonAnnotatedClass(TypeElement classElement, Elements elementUtils)
 			throws AxonProcessingException {
 		this.classElement = classElement;
 		this.className = classElement.getSimpleName().toString();
+		this.lowerClassName =Character.toLowerCase(className.charAt(0)) + className.substring(1); 
 		this.classType = classElement.asType();
 		PackageElement pkg = elementUtils.getPackageOf(classElement);
 		packageName = pkg.isUnnamed() ? null : pkg.getQualifiedName().toString();
@@ -121,6 +124,20 @@ public class AxonAnnotatedClass {
 	}
 	public void setPackageName(String packageName) {
 		this.packageName = packageName;
+	}
+	public void updateMethodValidator(String methodName,
+			ExecutableElement commandValidator) {
+		for (AxonAnnotatedMethod element : classModifierMethods) {
+		   if(element.getMethodName().equals(methodName))
+			   element.setCommandValidator(commandValidator);
+		}
+		
+	}
+	public String getLowerClassName() {
+		return lowerClassName;
+	}
+	public void setLowerClassName(String lowerClassName) {
+		this.lowerClassName = lowerClassName;
 	}
 
 }

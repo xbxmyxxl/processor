@@ -19,11 +19,11 @@ import com.squareup.javapoet.MethodSpec.Builder;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeName;
 
-public class ConstructorBuilderHelper {
+public class CommandEventBuilderHelper {
 
 	AxonAnnotatedMethod axonAnnotatedMethod;
 
-	public ConstructorBuilderHelper(AxonAnnotatedMethod axonAnnotatedMethod) {
+	public CommandEventBuilderHelper(AxonAnnotatedMethod axonAnnotatedMethod) {
 		super();
 		this.axonAnnotatedMethod = axonAnnotatedMethod;
 	}

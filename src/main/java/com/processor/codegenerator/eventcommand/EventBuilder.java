@@ -24,7 +24,7 @@ public class EventBuilder {
 				.getMethodParam();
 		
 		//set up the helper
-		ConstructorBuilderHelper eventBuilderHelper = new ConstructorBuilderHelper(
+		CommandEventBuilderHelper eventBuilderHelper = new CommandEventBuilderHelper(
 				axonAnnotatedMethod);
 		String className = axonAnnotatedMethod.getMethodName();
 		String commandName = Character.toUpperCase(className.charAt(0)) + className.substring(1)
