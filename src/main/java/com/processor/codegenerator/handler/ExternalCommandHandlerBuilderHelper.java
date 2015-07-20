@@ -19,6 +19,8 @@ import org.axonframework.eventhandling.annotation.EventHandler;
 import org.axonframework.eventsourcing.annotation.AggregateIdentifier;
 import org.axonframework.repository.Repository;
 import org.axonframework.test.Fixtures;
+import org.axonframework.unitofwork.DefaultUnitOfWork;
+import org.axonframework.unitofwork.UnitOfWork;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,13 +62,12 @@ public class ExternalCommandHandlerBuilderHelper {
 		ClassName aggregateRoot = ClassName.bestGuess(axonAnnotatedClass
 				.getPackageName()
 				+ ".aggregate."
-				+ axonAnnotatedClass.getClassName()
-				+ "RootAggregate");
+				+ axonAnnotatedClass.getClassName() + "RootAggregate");
 		ParameterizedTypeName parameterizedRepository = ParameterizedTypeName
-				.get(repository,
-						aggregateRoot);
+				.get(repository, aggregateRoot);
 
-		FieldSpec field = FieldSpec.builder(parameterizedRepository, "repository")
+		FieldSpec field = FieldSpec
+				.builder(parameterizedRepository, "repository")
 				.addModifiers(Modifier.PRIVATE, Modifier.FINAL).build();
 		return field;
 
@@ -93,11 +94,9 @@ public class ExternalCommandHandlerBuilderHelper {
 		ClassName aggregateRoot = ClassName.bestGuess(axonAnnotatedClass
 				.getPackageName()
 				+ ".aggregate."
-				+ axonAnnotatedClass.getClassName()
-				+ "RootAggregate");
+				+ axonAnnotatedClass.getClassName() + "RootAggregate");
 		ParameterizedTypeName parameterizedRepository = ParameterizedTypeName
-				.get(repository,
-						aggregateRoot);
+				.get(repository, aggregateRoot);
 
 		Builder constructorBuilder = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC);
@@ -130,11 +129,9 @@ public class ExternalCommandHandlerBuilderHelper {
 		ClassName aggregateRoot = ClassName.bestGuess(axonAnnotatedClass
 				.getPackageName()
 				+ ".aggregate."
-				+ axonAnnotatedClass.getClassName()
-				+ "RootAggregate");
+				+ axonAnnotatedClass.getClassName() + "RootAggregate");
 		ParameterizedTypeName parameterizedRepository = ParameterizedTypeName
-				.get(repository,
-						aggregateRoot);
+				.get(repository, aggregateRoot);
 		Builder constructorBuilder = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC);
 
@@ -196,9 +193,10 @@ public class ExternalCommandHandlerBuilderHelper {
 				.addParameter(command, "command").addModifiers(Modifier.FINAL);
 
 		commandHandler.addStatement("$L $L = ($L)repository.load(command.id)",
-				aggregate.simpleName(), variableAggregateName, aggregate.simpleName());
+				aggregate.simpleName(), variableAggregateName,
+				aggregate.simpleName());
 
-		String validatorName = axonAnnotatedMethod.getCapitalMethodName()
+		String validatorName = axonAnnotatedMethod.getMethodName()
 				+ "CommandValidator";
 		ClassName validator = ClassName.get(
 				axonAnnotatedClass.getPackageName(), validatorName);
@@ -246,7 +244,7 @@ public class ExternalCommandHandlerBuilderHelper {
 				.addAnnotation(CommandHandler.class)
 				.addParameter(command, "command").addModifiers(Modifier.FINAL);
 
-		String validatorName = "Create" + axonAnnotatedClass.getClassName()
+		String validatorName = "create" + axonAnnotatedClass.getClassName()
 				+ "CommandValidator";
 		ClassName validator = ClassName.get(
 				axonAnnotatedClass.getPackageName(), validatorName);
@@ -263,6 +261,31 @@ public class ExternalCommandHandlerBuilderHelper {
 				.endControlFlow();
 
 		return commandHandler.build();
+
+	}
+
+	protected MethodSpec loadRootAggregateById() {
+
+
+		ClassName aggregate;
+		String aggregateName = axonAnnotatedClass.getClassName()
+				+ "RootAggregate";
+		aggregate = ClassName.get(axonAnnotatedClass.getPackageName()
+				+ ".aggregate", aggregateName);
+
+
+		MethodSpec.Builder loadAggregateMethod = MethodSpec
+				.methodBuilder("loadUserRootAggregateById")
+				.addParameter(String.class, "id").addModifiers(Modifier.FINAL);
+		loadAggregateMethod.addStatement("$T unitOfWork = $T.startAndGet()",
+				UnitOfWork.class, DefaultUnitOfWork.class);
+		loadAggregateMethod.returns(aggregate);
+		loadAggregateMethod.beginControlFlow("try")
+				.addStatement("return repository.load(id)").endControlFlow()
+				.beginControlFlow("finally")
+				.addStatement("unitOfWork.commit()").endControlFlow();
+
+		return loadAggregateMethod.build();
 
 	}
 

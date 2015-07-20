@@ -18,6 +18,7 @@ package com.processor.parse;
 //import com.hannesdorfmann.annotationprocessing101.factory.annotation.Factory;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class AxonAnnotatedMethod {
 	private String capitalMethodName;
 	private TypeMirror methodReturn;
 	
-	private Map<String, TypeMirror> methodParam = new HashMap<String, TypeMirror>();
+	private LinkedHashMap<String, TypeMirror> methodParam = new LinkedHashMap<String, TypeMirror>();
 	
 //this is just for testing in git 
 	public AxonAnnotatedMethod(ExecutableElement exeElement,Elements elementUtils)

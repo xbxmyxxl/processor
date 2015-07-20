@@ -156,7 +156,7 @@ public class AxonProcessor extends AbstractProcessor {
 			this.processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
 					"start to generate code FOR " + axonGroupedClass);
 
-			axonGroupedClass.generateCodeForClass();
+			axonGroupedClass.generateCode();
 
 		} catch (AxonProcessingException e) {
 			error(e.getElement(), e.getMessage());

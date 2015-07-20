@@ -1,6 +1,5 @@
 package com.processor.codegenerator.facade;
 
-
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 
@@ -32,28 +31,54 @@ public class FacadeBuilder {
 				axonAnnotatedClass);
 		String className = axonAnnotatedClass.getClassName();
 		className = className + "Facade";
-		TypeMirror classType = axonAnnotatedClass.getClassType();
 
 		// add the fields
-		TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
+		TypeSpec.Builder classBuilder = TypeSpec
+				.classBuilder(className)
 				.addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-				.addField(FieldSpec.builder(CommandGateway.class, "commandGateway")
-						.addModifiers(Modifier.PRIVATE,Modifier.FINAL).build());
-		classBuilder.addMethod(facadeBuilderHelper.setterForCommandGateway());
+				.addField(
+						FieldSpec
+								.builder(CommandGateway.class, "commandGateway")
+								.addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+								.build())
+				.addField(facadeBuilderHelper.fieldUnSavedCommandList());
+		classBuilder.addMethod(facadeBuilderHelper.constructor());
 
-		//modifier
+		/* directly send the command */
+		// modifier
 		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
 				.getClassModifierMethods()) {
-			classBuilder.addMethod(facadeBuilderHelper.sendCommand(annotatedMethod));
+			classBuilder.addMethod(facadeBuilderHelper
+					.sendCommand(annotatedMethod));
 		}
-		
-		//constructors
+
+		// constructors
 		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
 				.getClassConstructorMethods()) {
-			classBuilder.addMethod(facadeBuilderHelper.sendCommandForConstructor(annotatedMethod));
+			classBuilder.addMethod(facadeBuilderHelper
+					.sendCommandForConstructor(annotatedMethod));
 		}
-		
-		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n");
+
+		/* save the command to a list */
+		// modifier
+		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
+				.getClassModifierMethods()) {
+			classBuilder.addMethod(facadeBuilderHelper
+					.saveCommand(annotatedMethod));
+		}
+
+		// constructors
+		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
+				.getClassConstructorMethods()) {
+			classBuilder.addMethod(facadeBuilderHelper
+					.saveCommandForConstructor(annotatedMethod));
+		}
+
+		classBuilder.addMethod(facadeBuilderHelper.clearUnsavedCommands());
+		classBuilder.addMethod(facadeBuilderHelper.getUnsavedCommands());
+		classBuilder.addMethod(facadeBuilderHelper.send());
+		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc(
+				"\n");
 
 		TypeSpec command = classBuilder.build();
 

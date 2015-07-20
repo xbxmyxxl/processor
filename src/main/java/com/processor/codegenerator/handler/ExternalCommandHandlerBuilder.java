@@ -56,7 +56,7 @@ public class ExternalCommandHandlerBuilder {
 				.getClassConstructorMethods()) {
 			classBuilder.addMethod(handlerBuilderHelper.commandHandlerForConstructor(annotatedMethod));
 		}
-		
+		classBuilder.addMethod(handlerBuilderHelper.loadRootAggregateById());
 		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n");
 
 		TypeSpec command = classBuilder.build();

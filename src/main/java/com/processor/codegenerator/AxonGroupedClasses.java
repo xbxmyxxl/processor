@@ -24,8 +24,14 @@ import com.processor.codegenerator.eventcommand.constructor.ConstructorEventBuil
 import com.processor.codegenerator.eventcommand.nonconstructor.CommandBuilder;
 import com.processor.codegenerator.eventcommand.nonconstructor.EventBuilder;
 import com.processor.codegenerator.facade.FacadeBuilder;
+import com.processor.codegenerator.gui.controller.ClassControllerBuilder;
+import com.processor.codegenerator.gui.controller.ControllerInterfaceBuilder;
+import com.processor.codegenerator.gui.model.ClassModelBuilder;
+import com.processor.codegenerator.gui.model.ModelInterfaceBuilder;
+import com.processor.codegenerator.gui.view.ClassViewBuilder;
+import com.processor.codegenerator.gui.view.ViewInterfaceBuilder;
 import com.processor.codegenerator.handler.ExternalCommandHandlerBuilder;
-import com.processor.codegenerator.handler.InterfaceCommandHandlerBuilder;
+import com.processor.codegenerator.handler.ExternalCommandHandlerInterfaceBuilder;
 import com.processor.codegenerator.test.TestAggregateBuilder;
 import com.processor.parse.AxonAnnotatedClass;
 import com.processor.parse.AxonAnnotatedMethod;
@@ -113,6 +119,8 @@ public class AxonGroupedClasses {
 				value.addConstructorMethod(new AxonAnnotatedMethod(
 						(ExecutableElement) annotatedElement, elementUtils));
 			} else {
+				AxonAnnotatedMethod AxonAnnotatedMethod = new AxonAnnotatedMethod(
+						(ExecutableElement) annotatedElement, elementUtils);
 				value.addConstructorMethod(new AxonAnnotatedMethod(
 						(ExecutableElement) annotatedElement, elementUtils));
 			}
@@ -125,71 +133,131 @@ public class AxonGroupedClasses {
 		this.filer = filer;
 	}
 
-	public void generateCodeForClass() throws IOException, Exception {
+	public void generateCommandEvents(AxonAnnotatedClass annotatedClass)
+			throws IOException, Exception {
+		String className = annotatedClass.getClassName();
+		for (AxonAnnotatedMethod annotatedMethod : annotatedClass
+				.getClassModifierMethods()) {
+
+			String pkgName = annotatedMethod.getPackageName() + ".command";
+			CommandBuilder commandBuilder = new CommandBuilder(annotatedMethod);
+			writeGeneratedCodeToFile(pkgName, commandBuilder.getCommandClass());
+
+			pkgName = annotatedMethod.getPackageName() + ".event";
+			EventBuilder eventBuilder = new EventBuilder(annotatedMethod);
+			writeGeneratedCodeToFile(pkgName, eventBuilder.getEventClass());
+
+		}
+		for (AxonAnnotatedMethod annotatedMethod : annotatedClass
+				.getClassConstructorMethods()) {
+
+			String pkgName = annotatedMethod.getPackageName() + ".command";
+			ConstructorCommandBuilder constructorCommandBuilder = new ConstructorCommandBuilder(
+					className, annotatedMethod);
+			writeGeneratedCodeToFile(pkgName,
+					constructorCommandBuilder.getCommandClass());
+
+			pkgName = annotatedMethod.getPackageName() + ".event";
+			ConstructorEventBuilder constructorEventBuilder = new ConstructorEventBuilder(
+					className, annotatedMethod);
+			writeGeneratedCodeToFile(pkgName,
+					constructorEventBuilder.getEventClass());
+
+		}
+
+	}
+
+	public void generateAggregate(AxonAnnotatedClass annotatedClass)
+			throws IOException, Exception {
+		String pkgName = annotatedClass.getPackageName() + ".aggregate";
+		AggregateBuilder aggregateBuilder = new AggregateBuilder(annotatedClass);
+		writeGeneratedCodeToFile(pkgName, aggregateBuilder.getAggregateClass());
+
+	}
+
+	public void generateTest(AxonAnnotatedClass annotatedClass)
+			throws IOException, Exception {
+		String pkgName = annotatedClass.getPackageName() + ".test";
+		TestAggregateBuilder testAggregateBuilder = new TestAggregateBuilder(
+				annotatedClass);
+		writeGeneratedCodeToFile(pkgName,
+				testAggregateBuilder.getAggregateClass());
+
+	}
+
+	public void generateFacade(AxonAnnotatedClass annotatedClass)
+			throws IOException, Exception {
+		/* generate the facade */
+		String pkgName = annotatedClass.getPackageName();
+		FacadeBuilder facadeBuilder = new FacadeBuilder(annotatedClass);
+		writeGeneratedCodeToFile(pkgName, facadeBuilder.getFacadeClass());
+	}
+
+	public void generateExternalCommandHandler(AxonAnnotatedClass annotatedClass)
+			throws IOException, Exception {
+		/* external command handler */
+		/* interface */
+		String pkgName = annotatedClass.getPackageName();
+		ExternalCommandHandlerInterfaceBuilder interfaceBuilder = new ExternalCommandHandlerInterfaceBuilder(
+				annotatedClass);
+		writeGeneratedCodeToFile(pkgName, interfaceBuilder.getInterface());
+		/* default implementation */
+		writeGeneratedCodeToFile(pkgName,
+				interfaceBuilder.getDefaultCommmandHandler());
+
+		ExternalCommandHandlerBuilder externalCommandHandlerBuilder = new ExternalCommandHandlerBuilder(
+				annotatedClass);
+		writeGeneratedCodeToFile(pkgName,
+				externalCommandHandlerBuilder.getHandler());
+
+	}
+
+	public void generateGui(AxonAnnotatedClass annotatedClass)
+			throws IOException, Exception {
+		
+		/* generate the view */
+		String pkgName = annotatedClass.getPackageName() + ".gui.view";
+		ViewInterfaceBuilder viewInterfaceBuilder = new ViewInterfaceBuilder(
+				annotatedClass);
+		writeGeneratedCodeToFile(pkgName, viewInterfaceBuilder.getInterface());
+		
+		ClassViewBuilder classViewBuilder = new ClassViewBuilder(
+				annotatedClass);
+		writeGeneratedCodeToFile(pkgName, classViewBuilder.getClassView());
+		
+		
+		pkgName = annotatedClass.getPackageName() + ".gui.controller";
+		ControllerInterfaceBuilder controllerInterfaceBuilder = new ControllerInterfaceBuilder(
+				annotatedClass);
+		writeGeneratedCodeToFile(pkgName, controllerInterfaceBuilder.getInterface());
+		
+		ClassControllerBuilder classControllerBuilder = new ClassControllerBuilder(
+				annotatedClass);
+		TypeSpec test = classControllerBuilder.getClassController();
+		writeGeneratedCodeToFile(pkgName, test);
+		
+		
+		pkgName = annotatedClass.getPackageName() + ".gui.model";
+		ModelInterfaceBuilder modelInterfaceBuilder = new ModelInterfaceBuilder(
+				annotatedClass);
+		writeGeneratedCodeToFile(pkgName, modelInterfaceBuilder.getInterface());
+	
+		ClassModelBuilder classModelBuilder = new ClassModelBuilder(
+				annotatedClass);
+		writeGeneratedCodeToFile(pkgName, classModelBuilder.getClassController());
+
+	}
+
+	public void generateCode() throws IOException, Exception {
 		for (Map.Entry<String, AxonAnnotatedClass> entry : classMap.entrySet()) {
 			AxonAnnotatedClass annotatedClass = entry.getValue();
-			String className = entry.getKey();
 
-			for (AxonAnnotatedMethod annotatedMethod : annotatedClass
-					.getClassModifierMethods()) {
-
-				String pkgName = annotatedMethod.getPackageName() + ".command";
-				CommandBuilder commandBuilder = new CommandBuilder(
-						annotatedMethod);
-				writeGeneratedCodeToFile(pkgName,
-						commandBuilder.getCommandClass());
-
-				pkgName = annotatedMethod.getPackageName() + ".event";
-				EventBuilder eventBuilder = new EventBuilder(annotatedMethod);
-				writeGeneratedCodeToFile(pkgName, eventBuilder.getEventClass());
-
-			}
-			for (AxonAnnotatedMethod annotatedMethod : annotatedClass
-					.getClassConstructorMethods()) {
-
-				String pkgName = annotatedMethod.getPackageName() + ".command";
-				ConstructorCommandBuilder constructorCommandBuilder = new ConstructorCommandBuilder(
-						className, annotatedMethod);
-				writeGeneratedCodeToFile(pkgName,
-						constructorCommandBuilder.getCommandClass());
-
-				pkgName = annotatedMethod.getPackageName() + ".event";
-				ConstructorEventBuilder constructorEventBuilder = new ConstructorEventBuilder(
-						className, annotatedMethod);
-				writeGeneratedCodeToFile(pkgName,
-						constructorEventBuilder.getEventClass());
-
-			}
-
-			String pkgName = annotatedClass.getPackageName() + ".aggregate";
-			AggregateBuilder aggregateBuilder = new AggregateBuilder(
-					annotatedClass);
-			writeGeneratedCodeToFile(pkgName,
-					aggregateBuilder.getAggregateClass());
-
-			pkgName = annotatedClass.getPackageName() + ".test";
-			TestAggregateBuilder testAggregateBuilder = new TestAggregateBuilder(
-					annotatedClass);
-			writeGeneratedCodeToFile(pkgName,
-					testAggregateBuilder.getAggregateClass());
-
-			pkgName = annotatedClass.getPackageName();
-			FacadeBuilder facadeBuilder = new FacadeBuilder(annotatedClass);
-			writeGeneratedCodeToFile(pkgName, facadeBuilder.getFacadeClass());
-
-			pkgName = annotatedClass.getPackageName();
-			InterfaceCommandHandlerBuilder interfaceBuilder = new InterfaceCommandHandlerBuilder(
-					annotatedClass);
-			writeGeneratedCodeToFile(pkgName, interfaceBuilder.getInterface());
-
-			writeGeneratedCodeToFile(pkgName,
-					interfaceBuilder.getDefaultCommmandHandler());
-
-			pkgName = annotatedClass.getPackageName();
-			ExternalCommandHandlerBuilder externalCommandHandlerBuilder = new ExternalCommandHandlerBuilder(
-					annotatedClass);
-			writeGeneratedCodeToFile(pkgName,
-					externalCommandHandlerBuilder.getHandler());
+			this.generateCommandEvents(annotatedClass);
+			this.generateAggregate(annotatedClass);
+			this.generateExternalCommandHandler(annotatedClass);
+			this.generateFacade(annotatedClass);
+			this.generateTest(annotatedClass);
+			this.generateGui(annotatedClass);
 
 		}
 

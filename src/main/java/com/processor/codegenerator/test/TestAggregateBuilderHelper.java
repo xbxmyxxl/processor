@@ -75,10 +75,12 @@ public class TestAggregateBuilderHelper {
 
 	public String randomParam(TypeMirror type) {
 		if (type.toString().equals("java.lang.String")) {
+			int number = 5;
 
 			SecureRandom random = new SecureRandom();
-			return new BigInteger(130, random).toString(32);
-		} else if (type.toString().equals("java.lang.Integer")) {
+			return "\"" + new BigInteger(130, random).toString(32) + "\"";
+		} else if (type.toString().equals("java.lang.Integer")
+				|| type.toString().equals("int")) {
 			Random rand = new Random();
 
 			// nextInt is normally exclusive of the top value,
@@ -87,17 +89,35 @@ public class TestAggregateBuilderHelper {
 
 			return randomNum.toString();
 
+		} else if (type.toString().equals("boolean")) {
+			Random rand = new Random();
+
+			// nextInt is normally exclusive of the top value,
+			// so add 1 to make it inclusive
+			Integer randomNum = rand.nextInt(2);
+			if (randomNum == 1)
+				return "true";
+			else
+				return "false";
+
+		} else if (type.toString().equals("char")) {
+			final String alphabet = "abcdefghijklmmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,./;'[]1234567890-=`<>?:{}+~!@#$%^&*()";
+			Random rand = new Random();
+			return new StringBuilder().append("\'")
+					.append(alphabet.charAt(rand.nextInt(alphabet.length())))
+					.append("\'").toString();
+
 		}
 		return null;
 	}
 
 	public MethodSpec testCommandEvent(AxonAnnotatedMethod annotatedMethod) {
 		Map<String, TypeMirror> methodParam = annotatedMethod.getMethodParam();
-		
+
 		ClassName constructor = ClassName.get(
 				axonAnnotatedClass.getPackageName() + ".event", className
 						+ "CreatedEvent");
-		
+
 		Map<String, TypeMirror> constructorParam = null;
 		if (axonAnnotatedClass.getClassConstructorMethods().size() == 1)
 			constructorParam = axonAnnotatedClass.getClassConstructorMethods()
@@ -122,13 +142,14 @@ public class TestAggregateBuilderHelper {
 		if (!constructorParam.isEmpty()) {
 			for (Map.Entry<String, TypeMirror> entry : constructorParam
 					.entrySet()) {
-				constructorTestParam += "\"" + randomParam(entry.getValue()) + "\"" + ",";
+				constructorTestParam += randomParam(entry.getValue()) + ",";
 
 			}
 		}
-		constructorTestParam = constructorTestParam.substring(0, constructorTestParam.length() - 1);
+		constructorTestParam = constructorTestParam.substring(0,
+				constructorTestParam.length() - 1);
 		for (Map.Entry<String, TypeMirror> entry : methodParam.entrySet()) {
-			testParam += "\"" + randomParam(entry.getValue()) + "\"" + ",";
+			testParam += randomParam(entry.getValue()) + ",";
 
 		}
 		testParam = testParam.substring(0, testParam.length() - 1);
@@ -148,42 +169,42 @@ public class TestAggregateBuilderHelper {
 
 	public MethodSpec testConstructor(AxonAnnotatedMethod annotatedMethod) {
 		ClassName constructorCommand = ClassName.get(
-				axonAnnotatedClass.getPackageName() + ".command", "Create"+className
-						+ "Command");
+				axonAnnotatedClass.getPackageName() + ".command", "Create"
+						+ className + "Command");
 		ClassName constructorEvent = ClassName.get(
 				axonAnnotatedClass.getPackageName() + ".event", className
 						+ "CreatedEvent");
-		
+
 		Map<String, TypeMirror> constructorParam = null;
 		if (axonAnnotatedClass.getClassConstructorMethods().size() == 1)
 			constructorParam = axonAnnotatedClass.getClassConstructorMethods()
 					.get(0).getMethodParam();
 
-		
-
 		Random rand = new Random();
 		Integer randomNum = rand.nextInt((100 - 0) + 1);
 		String constructorTestParam = "\"" + randomNum.toString() + "\"" + ",";
-		
+
 		if (!constructorParam.isEmpty()) {
 			for (Map.Entry<String, TypeMirror> entry : constructorParam
 					.entrySet()) {
-				constructorTestParam += "\"" + randomParam(entry.getValue()) + "\"" + ",";
+				constructorTestParam += randomParam(entry.getValue()) + ",";
 
 			}
 		}
 
-		constructorTestParam = constructorTestParam.substring(0, constructorTestParam.length() - 1);
+		constructorTestParam = constructorTestParam.substring(0,
+				constructorTestParam.length() - 1);
 
 		MethodSpec.Builder testCommandEvent = MethodSpec
-				.methodBuilder("test" + className)
+				.methodBuilder("test" + "Create" + className)
 				.addException(Exception.class)
 				.addModifiers(Modifier.PUBLIC)
 				.addAnnotation(Test.class)
 				.addStatement(
 						"fixture.given().when(new $T(" + constructorTestParam
-								+ ")).expectEvents(new $T($L))", constructorCommand,
-								constructorEvent, constructorTestParam);
+								+ ")).expectEvents(new $T($L))",
+						constructorCommand, constructorEvent,
+						constructorTestParam);
 		return testCommandEvent.build();
 
 	}

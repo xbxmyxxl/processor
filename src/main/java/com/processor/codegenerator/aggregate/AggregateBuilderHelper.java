@@ -88,7 +88,8 @@ public class AggregateBuilderHelper {
 			eventParam = eventParam.substring(0, eventParam.length() - 1);
 		}
 		commandHandler.addStatement("boolean flag = true")
-				.addParameter(command, "command").addModifiers(Modifier.FINAL,Modifier.PUBLIC);
+				.addParameter(command, "command")
+				.addModifiers(Modifier.FINAL, Modifier.PUBLIC);
 
 		for (ExecutableElement element : axonAnnotatedMethod
 				.getCommandValidator()) {
@@ -107,8 +108,8 @@ public class AggregateBuilderHelper {
 			validatorParam = validatorParam.substring(0,
 					validatorParam.length() - 1);
 
-			commandHandler.addStatement("flag = flag && $L.$L($L)",className, validatorName,
-					validatorParam);
+			commandHandler.addStatement("flag = flag && $L.$L($L)", className,
+					validatorName, validatorParam);
 
 		}
 		commandHandler.beginControlFlow("if(flag)")
@@ -138,7 +139,7 @@ public class AggregateBuilderHelper {
 		MethodSpec.Builder eventHandler = MethodSpec
 				.methodBuilder("on")
 				.addParameter(event, "event")
-				.addModifiers(Modifier.FINAL,Modifier.PUBLIC)
+				.addModifiers(Modifier.FINAL, Modifier.PUBLIC)
 				.addAnnotation(EventHandler.class)
 				.addStatement("this.id = event.id")
 				.addStatement(
@@ -167,7 +168,7 @@ public class AggregateBuilderHelper {
 		MethodSpec.Builder eventHandler = MethodSpec
 				.methodBuilder("on")
 				.addParameter(event, "event")
-				.addModifiers(Modifier.FINAL,Modifier.PUBLIC)
+				.addModifiers(Modifier.FINAL, Modifier.PUBLIC)
 				.addAnnotation(EventHandler.class)
 				.addStatement("this.id = event.id")
 				.addStatement(
@@ -227,6 +228,22 @@ public class AggregateBuilderHelper {
 		MethodSpec emptyConstructor = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC).addStatement("super()").build();
 		return emptyConstructor;
+	}
+
+	protected MethodSpec copyConstructor() {
+
+		ClassName aggregateRoot = ClassName.get(
+				axonAnnotatedClass.getPackageName() + ".aggregate",
+				axonAnnotatedClass.getClassName() + "RootAggregate");
+
+		MethodSpec.Builder copyConstructor = MethodSpec
+				.constructorBuilder()
+				.addParameter(aggregateRoot, "aggregateRoot")
+				.addModifiers(Modifier.PUBLIC)
+				.addStatement("this.id = aggregateRoot.id")
+				.addStatement("this.$L = aggregateRoot.$L.clone()",
+						this.axonAnnotatedClass.getClassName(),this.axonAnnotatedClass.getClassName());
+		return copyConstructor.build();
 	}
 
 }

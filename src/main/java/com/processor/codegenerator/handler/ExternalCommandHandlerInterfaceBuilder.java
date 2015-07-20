@@ -17,11 +17,11 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeSpec.Builder;
 
-public class InterfaceCommandHandlerBuilder {
+public class ExternalCommandHandlerInterfaceBuilder {
 
 	private AxonAnnotatedClass axonAnnotatedClass;
 
-	public InterfaceCommandHandlerBuilder(AxonAnnotatedClass axonAnnotatedClass) {
+	public ExternalCommandHandlerInterfaceBuilder(AxonAnnotatedClass axonAnnotatedClass) {
 		super();
 		this.axonAnnotatedClass = axonAnnotatedClass;
 	}
@@ -32,7 +32,7 @@ public class InterfaceCommandHandlerBuilder {
 				+ "Command");
 		return MethodSpec
 				.methodBuilder(
-						annotatedMethod.getCapitalMethodName() + "Command"
+						annotatedMethod.getMethodName() + "Command"
 								+ "Validator").addParameter(command, "command")
 				.returns(boolean.class)
 
@@ -47,7 +47,7 @@ public class InterfaceCommandHandlerBuilder {
 				+ "Command");
 		return MethodSpec
 				.methodBuilder(
-						annotatedMethod.getCapitalMethodName() + "Command"
+						annotatedMethod.getMethodName() + "Command"
 								+ "Validator").addParameter(command, "command")
 				.returns(boolean.class).addStatement("return true")
 				.addModifiers(Modifier.PUBLIC).build();
@@ -61,7 +61,7 @@ public class InterfaceCommandHandlerBuilder {
 				+ "Command");
 		return MethodSpec
 				.methodBuilder(
-						"Create" + axonAnnotatedClass.getClassName()
+						"create" + axonAnnotatedClass.getClassName()
 								+ "Command" + "Validator")
 				.returns(boolean.class).addParameter(command, "command")
 				.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT).build();
@@ -75,7 +75,7 @@ public class InterfaceCommandHandlerBuilder {
 				+ "Command");
 		return MethodSpec
 				.methodBuilder(
-						"Create" + axonAnnotatedClass.getClassName()
+						"create" + axonAnnotatedClass.getClassName()
 								+ "Command" + "Validator")
 				.returns(boolean.class).addParameter(command, "command")
 				.addStatement("return true").addModifiers(Modifier.PUBLIC)
@@ -86,7 +86,7 @@ public class InterfaceCommandHandlerBuilder {
 	public TypeSpec getInterface() {
 
 		TypeSpec.Builder validatorInterfaceBuilder = TypeSpec.interfaceBuilder(
-				axonAnnotatedClass.getClassName() + "CommandValidator")
+				axonAnnotatedClass.getClassName() + "CommandValidator").addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n")
 				.addModifiers(Modifier.PUBLIC);
 		// modifier
 		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
@@ -112,23 +112,26 @@ public class InterfaceCommandHandlerBuilder {
 
 	public TypeSpec getDefaultCommmandHandler() throws Exception {
 
-		//ClassLoader classLoader = 	User.class
-		//		.getClassLoader();
+		// ClassLoader classLoader = User.class
+		// .getClassLoader();
 		String interfaceCommandValidatorName = axonAnnotatedClass
-				.getPackageName()+"."
+				.getPackageName()
+				+ "."
 				+ axonAnnotatedClass.getClassName()
 				+ "CommandValidator";
-		//Class interfaceCommandValidator = classLoader
-		//		.loadClass(interfaceCommandValidatorName);
+		// Class interfaceCommandValidator = classLoader
+		// .loadClass(interfaceCommandValidatorName);
 		// System.out.println("aClass.getName() = " + aClass.getName());
 
-		String interfaceName = axonAnnotatedClass.getPackageName()+"."+axonAnnotatedClass.getClassName()+"CommandValidator";
+		String interfaceName = axonAnnotatedClass.getPackageName() + "."
+				+ axonAnnotatedClass.getClassName() + "CommandValidator";
 		TypeSpec.Builder validatorInterfaceBuilder = TypeSpec
 				.classBuilder(
 						axonAnnotatedClass.getClassName() + "CommandValidator"
 								+ "Default").addModifiers(Modifier.PUBLIC)
 				.addMethod(emptyConstructor())
-			 	.addSuperinterface(ClassName.bestGuess(interfaceName));
+				.addJavadoc("Auto generated! Do not Modify!").addJavadoc("\n")
+				.addSuperinterface(ClassName.bestGuess(interfaceName));
 		// modifier
 		for (AxonAnnotatedMethod annotatedMethod : axonAnnotatedClass
 				.getClassModifierMethods()) {

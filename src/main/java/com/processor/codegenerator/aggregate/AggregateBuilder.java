@@ -72,6 +72,7 @@ public class AggregateBuilder {
 		classBuilder.addJavadoc("Auto generated! Do not Modify!").addJavadoc(
 				"\n");
 		classBuilder.addMethod(aggregateBuilderHelper.emptyConstructor());
+		classBuilder.addMethod(aggregateBuilderHelper.copyConstructor());
 
 		TypeSpec command = classBuilder.build();
 
